@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Application specific
+pdf_files/*
+vector_db/*
+chat_history/*
+
+# Keep the directories but ignore contents
+!pdf_files/.gitkeep
+!vector_db/.gitkeep
+!chat_history/.gitkeep
+
+# Docker
+*.tar

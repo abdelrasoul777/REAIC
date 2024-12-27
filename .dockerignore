@@ -1,0 +1,14 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.env
+*.pdf
+vector_db/*
+chat_history/*
+.git
+.gitignore
+Dockerfile
+.dockerignore

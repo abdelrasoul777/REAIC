@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REAIC - Real Estate AI Consultant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+            background-color: #f8f9fa;
+        }
+        
+        .container-fluid {
+            height: 100%;
+            padding: 0;
+        }
+        
+        .sidebar, .documents-sidebar {
+            height: 100vh;
+            background-color: #ffffff;
+            border-right: 1px solid #dee2e6;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .chat-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .chat-input {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+        
+        .user-message {
+            background-color: #007bff;
+            color: white;
+            margin-left: auto;
+        }
+        
+        .ai-message {
+            background-color: #e9ecef;
+            color: black;
+            margin-right: auto;
+        }
+        
+        .new-chat-btn, .upload-doc-btn {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .new-chat-btn:hover, .upload-doc-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .new-chat-btn i, .upload-doc-btn i {
+            margin-right: 4px;
+        }
+
+        .conversation-item, .document-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+
+        .conversation-item:hover, .document-item:hover {
+            background-color: #2a2a2a;
+            color: #ffffff;
+            border-color: #2a2a2a;
+        }
+
+        .conversation-item.active, .document-item.active {
+            background-color: #2a2a2a;
+            color: #ffffff;
+            border-color: #2a2a2a;
+        }
+
+        .conversation-text, .document-text {
+            flex-grow: 1;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-right: 10px;
+        }
+
+        .delete-btn, .delete-doc-btn {
+            visibility: hidden;
+            background: none;
+            border: none;
+            color: #ff4444;
+            cursor: pointer;
+            padding: 4px;
+            font-size: 16px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .delete-btn:hover, .delete-doc-btn:hover {
+            opacity: 1;
+        }
+
+        .conversation-item:hover .delete-btn,
+        .document-item:hover .delete-doc-btn {
+            visibility: visible;
+        }
+
+        #conversationsList, #documentsList {
+            margin-top: 10px;
+        }
+        
+        .timestamp {
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .documents-list {
+            margin-top: 20px;
+        }
+        
+        .upload-btn {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        #fileUpload {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row h-100">
+            <!-- Sidebar -->
+            <div class="col-md-3 sidebar">
+                <button class="new-chat-btn" onclick="startNewChat()">
+                    <i class="fas fa-plus"></i>New Chat
+                </button>
+                <div id="conversationsList">
+                    <!-- Conversations will be loaded here -->
+                </div>
+            </div>
+            
+            <!-- Main Chat Area -->
+            <div class="col-md-6 chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Messages will appear here -->
+                </div>
+                
+                <div class="chat-input">
+                    <input type="text" id="messageInput" class="form-control" placeholder="Type your message...">
+                    <button class="btn btn-primary" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Documents Sidebar -->
+            <div class="col-md-3 documents-sidebar">
+                <label class="upload-doc-btn" for="pdfUpload">
+                    <i class="fas fa-file-pdf"></i>Upload PDF
+                    <input type="file" id="pdfUpload" accept=".pdf" style="display: none;" onchange="handleFileUpload(event)">
+                </label>
+                <div id="documentsList">
+                    <!-- Documents will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentConversationId = null;
+        
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0,
+                    v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+        
+        function startNewChat() {
+            currentConversationId = generateUUID();
+            document.getElementById('chatMessages').innerHTML = '';
+            loadConversations();  // Refresh the sidebar
+        }
+        
+        async function loadConversations() {
+            try {
+                const response = await fetch('/conversations');
+                const conversations = await response.json();
+                
+                const list = document.getElementById('conversationsList');
+                list.innerHTML = '';
+                
+                conversations.forEach(conv => {
+                    const item = document.createElement('div');
+                    item.className = 'conversation-item';
+                    if (conv.id === currentConversationId) {
+                        item.classList.add('active');
+                    }
+                    
+                    const textContainer = document.createElement('div');
+                    textContainer.className = 'conversation-text';
+                    
+                    const title = document.createElement('span');
+                    title.className = 'conversation-title';
+                    title.textContent = conv.title || 'New Conversation';
+                    
+                    const preview = document.createElement('div');
+                    preview.className = 'conversation-preview';
+                    preview.textContent = conv.preview || '';
+                    
+                    textContainer.appendChild(title);
+                    textContainer.appendChild(preview);
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.innerHTML = '&#128465;';
+                    deleteBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        if (confirm('Are you sure you want to delete this conversation?')) {
+                            deleteConversation(conv.conversation_id);
+                        }
+                    };
+                    
+                    item.appendChild(textContainer);
+                    item.appendChild(deleteBtn);
+                    
+                    item.onclick = () => loadConversation(conv.conversation_id);
+                    list.appendChild(item);
+                });
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+            }
+        }
+        
+        async function deleteConversation(conversationId) {
+            try {
+                const response = await fetch(`/conversations/${conversationId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    // If we deleted the current conversation, start a new one
+                    if (conversationId === currentConversationId) {
+                        await startNewChat();
+                    } else {
+                        // Otherwise just refresh the conversations list
+                        await loadConversations();
+                    }
+                } else {
+                    console.error('Failed to delete conversation');
+                }
+            } catch (error) {
+                console.error('Error deleting conversation:', error);
+            }
+        }
+        
+        async function loadConversation(conversationId) {
+            try {
+                const response = await fetch(`/conversations/${conversationId}`);
+                const conversation = await response.json();
+                
+                if (conversation && conversation.messages) {
+                    currentConversationId = conversationId;
+                    chatMessages.innerHTML = '';
+                    conversation.messages.forEach(msg => {
+                        appendMessage(msg.content, msg.role === 'assistant');
+                    });
+                    loadConversations(); // Refresh sidebar to update active state
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+            } catch (error) {
+                console.error('Error loading conversation:', error);
+            }
+        }
+        
+        function appendMessage(message, isAssistant) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isAssistant ? 'ai-message' : 'user-message'}`;
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                if (!currentConversationId) {
+                    currentConversationId = generateUUID();
+                }
+                
+                // Add user message to UI
+                const chatMessages = document.getElementById('chatMessages');
+                const userMessageDiv = document.createElement('div');
+                userMessageDiv.className = 'message user-message';
+                userMessageDiv.textContent = message;
+                chatMessages.appendChild(userMessageDiv);
+                
+                // Clear input
+                input.value = '';
+                
+                // Send to server
+                fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        conversation_id: currentConversationId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Add AI response to UI
+                    const aiMessageDiv = document.createElement('div');
+                    aiMessageDiv.className = 'message ai-message';
+                    aiMessageDiv.textContent = data.response;
+                    chatMessages.appendChild(aiMessageDiv);
+                    
+                    // Scroll to bottom
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                    // Refresh conversations list
+                    loadConversations();
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+        
+        async function handleFileUpload(event) {
+            const files = event.target.files;
+            if (!files.length) return;
+
+            const formData = new FormData();
+            let totalSize = 0;
+            
+            // Check file types and total size
+            for (const file of files) {
+                if (!file.name.toLowerCase().endsWith('.pdf')) {
+                    alert('Only PDF files are allowed');
+                    event.target.value = '';
+                    return;
+                }
+                totalSize += file.size;
+                if (totalSize > 16 * 1024 * 1024) { // 16MB limit
+                    alert('Total file size exceeds 16MB limit');
+                    event.target.value = '';
+                    return;
+                }
+                formData.append('files', file);
+            }
+
+            // Show loading state
+            const uploadBtn = document.querySelector('.upload-doc-btn');
+            const originalText = uploadBtn.innerHTML;
+            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            uploadBtn.style.pointerEvents = 'none';
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    await loadDocuments();
+                    alert('Files processed successfully!');
+                } else {
+                    alert(result.error || 'Error processing files');
+                }
+            } catch (error) {
+                console.error('Error uploading file:', error);
+                alert('Error uploading file');
+            } finally {
+                // Reset upload button
+                uploadBtn.innerHTML = originalText;
+                uploadBtn.style.pointerEvents = 'auto';
+                event.target.value = '';
+            }
+        }
+        
+        async function loadDocuments() {
+            try {
+                const response = await fetch('/documents');
+                const documents = await response.json();
+                
+                const list = document.getElementById('documentsList');
+                list.innerHTML = '';
+                
+                documents.forEach(doc => {
+                    const item = document.createElement('div');
+                    item.className = 'document-item';
+                    
+                    const text = document.createElement('div');
+                    text.className = 'document-text';
+                    text.textContent = doc.filename;
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-doc-btn';
+                    deleteBtn.innerHTML = '&#128465;';
+                    deleteBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        if (confirm('Are you sure you want to delete this document? This will remove both the file and all its embedded text.')) {
+                            deleteDocument(doc.id, e);
+                        }
+                    };
+                    
+                    item.appendChild(text);
+                    item.appendChild(deleteBtn);
+                    item.onclick = () => selectDocument(doc.id);
+                    
+                    list.appendChild(item);
+                });
+            } catch (error) {
+                console.error('Error loading documents:', error);
+            }
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString();
+        }
+        
+        async function deleteDocument(docId, event) {
+            try {
+                const deleteBtn = event.target;
+                const originalHtml = deleteBtn.innerHTML;
+                deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                deleteBtn.style.pointerEvents = 'none';
+
+                const response = await fetch(`/documents/${docId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        await loadDocuments();
+                        console.log('Document deleted successfully');
+                    } else {
+                        alert(result.error || 'Failed to delete document');
+                    }
+                } else {
+                    const error = await response.json();
+                    alert(error.error || 'Failed to delete document');
+                }
+            } catch (error) {
+                console.error('Error deleting document:', error);
+                alert('Error deleting document');
+            } finally {
+                if (deleteBtn) {
+                    deleteBtn.innerHTML = originalHtml;
+                    deleteBtn.style.pointerEvents = 'auto';
+                }
+            }
+        }
+        
+        function selectDocument(docId) {
+            // TODO: Implement document selection logic
+            console.log('Selected document:', docId);
+        }
+        
+        // Handle Enter key in message input
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Load conversations and documents on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConversations();
+            loadDocuments();
+        });
+    </script>
+</body>
+</html>
