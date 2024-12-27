@@ -6,6 +6,37 @@ A Docker-based AI application for real estate consulting, providing property val
 
 - Docker Desktop installed on your machine
 - Git installed on your machine
+- Groq API key (for AI language model)
+- Nomic API token (for embeddings)
+
+## Setting Up API Keys
+
+1. Get your API keys:
+   - Groq API Key:
+     - Sign up at [Groq Console](https://console.groq.com)
+     - Generate an API key from your dashboard
+   
+   - Nomic API Token:
+     - Sign up at [Nomic Atlas](https://atlas.nomic.ai)
+     - Get your API token from the dashboard
+
+2. Create your environment file:
+   ```bash
+   # Copy the example environment file
+   cp .env.example .env
+   ```
+
+3. Edit the `.env` file with your actual keys:
+   ```
+   GROQ_API_KEY=gsk_your_actual_groq_key_here
+   NOMIC_API_TOKEN=nk-your_actual_nomic_token_here
+   FLASK_SECRET_KEY=any-random-string-for-security
+   ```
+
+   Notes:
+   - GROQ_API_KEY: Must start with 'gsk_' (get this from Groq Console)
+   - NOMIC_API_TOKEN: Must start with 'nk-' (get this from Nomic Atlas)
+   - FLASK_SECRET_KEY: Can be any random string (used for session security)
 
 ## Quick Start
 
@@ -15,11 +46,7 @@ git clone <your-github-repo-url>
 cd REAIC
 ```
 
-2. Create a `.env` file in the root directory with your API keys:
-```
-FLASK_SECRET_KEY=your-secret-key
-GROQ_API_KEY=your-groq-api-key
-```
+2. Follow the "Setting Up API Keys" section above to create your `.env` file
 
 3. Build the Docker image:
 ```bash
@@ -61,4 +88,19 @@ docker stop <container-id>
 If you can't access the application:
 1. Make sure Docker Desktop is running
 2. Check if port 5000 is available on your machine
-3. Verify that all environment variables are set correctly in the .env file
+3. Verify that all your API keys are correctly set in the .env file
+4. Check Docker logs for any errors:
+   ```bash
+   docker logs <container-id>
+   ```
+
+## API Key Security
+
+⚠️ Important Security Notes:
+- Never commit your `.env` file to version control
+- Keep your API keys confidential
+- Regularly rotate your API keys for better security
+- If you accidentally expose your API keys, regenerate them immediately
+- Make sure your API keys have the correct format:
+  - Groq key starts with 'gsk_'
+  - Nomic token starts with 'nk-'

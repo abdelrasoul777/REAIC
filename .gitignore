@@ -1,9 +1,13 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
 venv/
-.env
 
 # Application specific
 pdf_files/*
@@ -17,3 +21,9 @@ chat_history/*
 
 # Docker
 *.tar
+
+# IDE specific
+.vscode/
+.idea/
+*.swp
+*.swo
